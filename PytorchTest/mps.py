@@ -6,7 +6,7 @@ Code to find the ground state of the Ising model,
 with an MPS ansatz, using gradient-based optimization (bfgs)
 with automatic differentiaiton in PyTorch.
 
-Then, we compare to exact diagonolization.
+Then, we compare to exact diagonalization.
 
 Intended to be a demonstration of how the optimization aspect of the 2D MBL
 code will work.  Of course in 'real life' for a case like this one would rather
