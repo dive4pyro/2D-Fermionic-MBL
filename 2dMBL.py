@@ -101,7 +101,7 @@ def figure_of_merit():
 
 
 
-optimizer = torch.optim.LBFGS([u,v],max_iter=40)
+optimizer = torch.optim.LBFGS(Au+Av,max_iter=40)
 
 def closure():
         optimizer.zero_grad()
