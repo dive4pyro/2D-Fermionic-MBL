@@ -1,4 +1,5 @@
 from numpy import argsort, array
+import numpy as np
 
 '''
 this file contains code that converts a particle number conserving matrix from
