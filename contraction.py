@@ -6,7 +6,7 @@ See "main trace operation" notes for figures and detailed explanations
 Everything in the code here refers directly to the notes and vis versa
 
 '''
-from numpy import torch.einsum,diag,zeros,eye,array
+import torch
 
 sz = torch.tensor([[1.,0],
             [0,-1]])
