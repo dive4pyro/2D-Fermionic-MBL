@@ -1,3 +1,6 @@
+./PytorchTest/mps.py is a quick demonstration of how PyTorch works, using finding the ground state of the Ising model as an example.
+
+
 Here is an unfinished version of the 2D fermionic MBL code.
 (for spinless fermions on an arbitrarily sized PBC lattice)
 
@@ -13,4 +16,3 @@ current status is:
 1. and 2. are now done.  3. (probably the most diffcult part) hasn't been started yet.
 
 
-In ./PytorchTest/mps.py is a demonstration of how PyTorch works, using finding the ground state of the Ising model as an example.
