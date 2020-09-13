@@ -47,10 +47,11 @@ hL = torch.einsum('i,iabc',vL,h)
 hR = torch.einsum('i,aibc',vR,h)
 ###########################################################################
 # A is a list of the four MPS tensors, i.e. our variables to optimize
+
 #initialize with random tensors
-A = []
 def Atensor(dim):
     return torch.rand(dim,requires_grad = True)
+ 
 A = [Atensor((2,D)),Atensor((2,D,D)),Atensor((2,D,D)),Atensor((2,D))]
 
 #define the loss function, i.e. energy, in terms of our variables
@@ -65,7 +66,7 @@ def energy():
 
 
 #define the "optimizer" object.  We use the LBFGS (quasi Newton) algorithm
-optimizer = torch.optim.LBFGS(A,max_iter=40)#maximum # of iterations
+optimizer = torch.optim.LBFGS(A,max_iter=30)#maximum # of iterations
 
 #the "closure" is basically something we have to include to the optimizer to recompute
 #the loss function multiple times
@@ -82,6 +83,7 @@ optimizer.step(closure)
 print('energy after optimization = ', energy())
 
 #################################################################################
+
 #now for exact diagonalization
 #construct the Hamiltonian matrix
 from numpy import zeros,kron, eye, linalg as la
