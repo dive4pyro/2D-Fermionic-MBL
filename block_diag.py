@@ -16,7 +16,6 @@ Out situation here is that we want particle-number conserving unitaries, but we 
 matrices, and then apply the appropriate inverse basis permutation to get the "usual" basis non-block-diagonal matrices.
 '''
 
-
 #produces an array of particle numbers corresponding to basis states
 def ParticleNum(N):
     a = array([0,1])
@@ -32,7 +31,6 @@ the double argsort is there because we want the INVERSE of the permutation,
 that is we want to go away from block diagonal rather than to block diagonal
 (in this case the 'desired' permutation is P^-1,where P is the "to block diagonal permutation")
 '''
-
 
 def permuteBasis(H,order): #where order is the inverse of the desired permutation
     H = H[order] #permute rows
