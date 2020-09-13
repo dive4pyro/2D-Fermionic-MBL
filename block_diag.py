@@ -1,6 +1,4 @@
-from numpy import argsort, array
-import numpy as np
-
+from numpy import argsort, array, append
 '''
 this file contains code that converts a particle number conserving matrix from
 block-diagonal form to the "usual" occupation number basis
@@ -13,7 +11,7 @@ the code below is probably quite unclear but I can write notes on it if needed.
 def ParticleNum(N):
     a = array([0,1])
     for i in range(N-1):
-        a = np.append(a,a+1)
+        a = append(a,a+1)
     return a
 
 def permute_order(N):
