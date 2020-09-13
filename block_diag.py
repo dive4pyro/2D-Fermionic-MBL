@@ -3,7 +3,17 @@ from numpy import argsort, array, append
 this file contains code that converts a particle number conserving matrix from
 block-diagonal form to the "usual" occupation number basis
 
-the code below is probably quite unclear but I can write notes on it if needed.
+
+How this works: (consider N = 3, with Hilbert space dim = 8, but the idea should generalize easily)
+
+The "usual" basis consists of basis vectors: { |000⟩, |001⟩, |010⟩, |011⟩, |100⟩, |101⟩, |110⟩, |111⟩ }
+
+These basis vectors have particle numbers {0,1,1,2,1,2,2,3} respectively.  A particle-number conserving operator will not be block diagonal in this basis.
+However, if we define a new basis by shuffling the basis vectors so that the respective particle numbers are {0,1,1,1,2,2,2,3}, then particle-number conserving
+operators will be diagonal.
+
+Out situation here is that we want particle-number conserving unitaries, but we want to work in the "usual" basis.  So first we generate random block diagonal
+matrices, and then apply the appropriate inverse basis permutation to get the "usual" basis non-block-diagonal matrices.
 '''
 
 
