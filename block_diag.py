@@ -22,6 +22,7 @@ def ParticleNum(N):
     for i in range(N-1):
         a = append(a,a+1)
     return a
+#example: ParticleNum(3) returns array([0,1,1,2,1,2,2,3])
 
 def permute_order(N):
     particleNumbers = ParticleNum(N)
