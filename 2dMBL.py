@@ -3,29 +3,15 @@ Main Code
 
 (optimize all unitaries at once)
 '''
-import numpy as np
-from numpy import pi,cos,floor,kron,zeros
 from numpy.random import rand
 from scipy.linalg import expm
 import torch
 from contraction import *
 from expm_taylor import *
 from block_diag import *
+from FOM_terms import *
 
-'''for the Hamiltonian'''
-bx=.721; by=.693
-U=J=delta=1.
-
-cdag = torch.tensor([[0.,0],[1,0]])
-c = torch.tensor([[0.,1],[0,0]])
-nhat = torch.tensor([[0.,0],[0,1]])
-
-def f(m,n):
-    return delta*(cos(2*pi*bx*m)+cos(2*pi*by*n))
-
-def h(m,n):
-    return (kron(cdag,c) + kron(c,cdag) + kron(nhat,.5*f(m,n)*eye(2)*U*nhat)).reshape(2,2,2,2)
-
+N = 6
 
 '''function to generate the untaries in the quantum circuit ansatz.
 creates a random unitary with particle number conservation'''
@@ -44,10 +30,6 @@ def generate_unitary(A):
     u = permuteBasis(u,permute_order(4))
     return u.reshape(2,2,2,2,2,2,2,2)
 
-#to take transpose, i.e. "flip upside down"
-def dagger(u):
-    return u.reshape(16,16).T.reshape(2,2,2,2,2,2,2,2)
-
 ####################################################################################
 '''main part of the code'''
 #initialize all the to-be-optimized variables
@@ -60,48 +42,29 @@ for i in range(int(N/2)):
     Au.append([])
     Av.append([])
     for j in range(int(N/2)):
-        Au[i].append([torch.rand(4,4,requires_grad=True),torch.rand(6,6,requires_grad=True),torch.rand(4,4,requires_grad=True)])
-        Av[i].append([torch.rand(4,4,requires_grad=True),torch.rand(6,6,requires_grad=True),torch.rand(4,4,requires_grad=True)])
+        Au[i].append([torch.zeros(4,4,requires_grad=True),torch.zeros(6,6,requires_grad=True),torch.zeros(4,4,requires_grad=True)])
+        Av[i].append([torch.zeros(4,4,requires_grad=True),torch.zeros(6,6,requires_grad=True),torch.zeros(4,4,requires_grad=True)])
 
-# unitaries: u = top layer, v = bottom layer
-u = []; v = []
-for i in range(int(N/2)):
-    u.append([])
-    v.append([])
-    for j in range(int(N/2)):
-        u[i].append(generate_unitary(Au[i,j]))
-        v[i].append(generate_unitary(Av[i,j]))
-
-
-
-'''
-need to write the following section
-'''
 
 def figure_of_merit():
+    # unitaries: u = top layer, v = bottom layer
+    u = []; v = []
+    for i in range(int(N/2)):
+        u.append([])
+        v.append([])
+        for j in range(int(N/2)):
+            u[i].append(generate_unitary(Au[i][j]))
+            v[i].append(generate_unitary(Av[i][j]))
+
     fig_of_merit = 0
-    '''
+    for i in range(int(N/2)):
+        for j in range(int(N/2)):
+            fig_of_merit+=f_plaq([ u[i][j], u[(i+1)%int(N/2)][j], u[(i+1)%int(N/2)][(j+1)%int(N/2)], u[i][(j+1)%int(N/2)] ], v[i][j] ,i,j)
 
-    when completed,this will probably be the most nontrivial part of the code
-
-    a very rough outline is as follows:
-
-
-    for i in sites:
-        get the Z tensor
-
-        for hk in lightcone(site i):
-            for hl in lightcone(site i):
-
-                find the relevant A,B,C,D tensors
-                fig_of_merit += trace calculation(...)
-    '''
+    fig_of_merit *= -1
     return fig_of_merit
 
-
-
-
-optimizer = torch.optim.LBFGS(Au+Av,max_iter=40)
+optimizer = torch.optim.LBFGS(sum(sum(Au+Av,[]),[]),max_iter=1)
 
 def closure():
         optimizer.zero_grad()
@@ -109,9 +72,10 @@ def closure():
         loss.backward()
         return loss
 ################################################################################
+print(figure_of_merit())
 
 #now run the optimization
-optimizer.step(closure)
+#optimizer.step(closure)
 
 '''
 At this point, export the optimized unitaries to a file, or perform further
