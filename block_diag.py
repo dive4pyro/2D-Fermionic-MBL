@@ -12,7 +12,7 @@ These basis vectors have particle numbers {0,1,1,2,1,2,2,3} respectively.  A par
 However, if we define a new basis by shuffling the basis vectors so that the respective particle numbers are {0,1,1,1,2,2,2,3}, then particle-number conserving
 operators will be diagonal.
 
-Out situation here is that we want particle-number conserving unitaries, but we want to work in the "usual" basis.  So first we generate random block diagonal
+Our situation here is that we want particle-number conserving unitaries, but we want to work in the "usual" basis.  So first we generate random block diagonal
 matrices, and then apply the appropriate inverse basis permutation to get the "usual" basis non-block-diagonal matrices.
 '''
 
