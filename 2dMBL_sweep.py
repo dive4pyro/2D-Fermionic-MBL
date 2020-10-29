@@ -1,6 +1,7 @@
 '''
 Main Code
 (optimize FOM terms from one plaquette at a time)
+d=2, with overall particle number conservation
 '''
 import torch
 from contraction import *
@@ -10,30 +11,15 @@ from FOM_terms import *
 
 N = 6
 
-'''function to generate the untaries in the quantum circuit ansatz.
-creates a random unitary with particle number conservation'''
-def generate_unitary(A):
-    #A is a list of [4x4 matrix, 6x6 matrix, 4x4 matrix]
-
-    #construct the block diagonal random unitary matrix
-    u = torch.zeros([16,16])
-    u[0,0] = 1.       # 0 particle sector
-    u[15,15] = 1      # 4 particle sector
-    u[1:5,1:5] = torch_expm(A[0]-A[0].T)    # 1 particle sector
-    u[5:11,5:11] = torch_expm(A[1]-A[1].T)  # 2 particle sector
-    u[11:15,11:15] = torch_expm(A[2]-A[2].T)# 3 particle sector
-
-    #transform to the usual basis (u will no longer be block diagonal)
-    u = permuteBasis(u,permute_order(4))
-    return u.reshape(2,2,2,2,2,2,2,2)
-
 ####################################################################################
-'''main part of the code'''
 #initialize all the to-be-optimized variables
 #store them in 2D lists
-
-#actual variables: Au and Av
-#these are the underlying variables which must be passed to the optimizer later
+'''actual variables Au and Av
+these are the underlying variables which must be passed to the optimizer later
+Au and Av each is an (N/2) x (N/2) list, and each element of is a list [4x4 matrix, 6x6 matrix, 4x4 matrix]
+this list is turned into a 16x16 unitary matrix (and then reshaped to tensor) 
+via the generate_unitary function in block_diag.py
+'''
 Au = []; Av = []
 for i in range(int(N/2)):
     Au.append([])
