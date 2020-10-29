@@ -75,10 +75,6 @@ for step in range(3):
     print('step ',step+1,'   ',fom)
 
 ################################################################################
-
-#now run the optimization
-#optimizer.step(closure)
-
 '''
 At this point, export the optimized unitaries to a file, or perform further
 calculations/checks, etc.'''
