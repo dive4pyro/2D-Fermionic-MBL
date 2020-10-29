@@ -1,5 +1,6 @@
 from numpy import argsort, array, append
 from expm_taylor import torch_expm
+import torch
 '''
 this file contains code that converts a particle number conserving matrix from
 block-diagonal form to the "usual" occupation number basis
