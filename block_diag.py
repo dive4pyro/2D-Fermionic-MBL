@@ -1,4 +1,5 @@
 from numpy import argsort, array, append
+from expm_taylor import torch_expm
 '''
 this file contains code that converts a particle number conserving matrix from
 block-diagonal form to the "usual" occupation number basis
@@ -37,3 +38,23 @@ def permuteBasis(H,order): #where order is the inverse of the desired permutatio
     H = H[order] #permute rows
     H = H.T[order].T #permute columns
     return H
+ 
+ ####################################################################################   
+'''function to generate the untaries in the quantum circuit ansatz.
+creates a random unitary with particle number conservation'''
+def generate_unitary(A):
+    #A is a list of [4x4 matrix, 6x6 matrix, 4x4 matrix]
+
+    #construct the block diagonal random unitary matrix
+    u = torch.zeros([16,16])
+    u[0,0] = 1.       # 0 particle sector
+    u[15,15] = 1      # 4 particle sector
+    u[1:5,1:5] = torch_expm(A[0]-A[0].T)    # 1 particle sector
+    u[5:11,5:11] = torch_expm(A[1]-A[1].T)  # 2 particle sector
+    u[11:15,11:15] = torch_expm(A[2]-A[2].T)# 3 particle sector
+
+    #transform to the usual basis (u will no longer be block diagonal)
+    u = permuteBasis(u,permute_order(4))
+    return u.reshape(2,2,2,2,2,2,2,2)   
+    
+    
