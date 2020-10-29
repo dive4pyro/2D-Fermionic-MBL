@@ -1,31 +1,17 @@
 '''
-With sweeping, i.e. perform optimization step for "each lightcone"
+Main Code
 
-as opposed to updating all the unitaries at once (which may be too memory intensive)
+(optimize FOM terms from one plaquette at a time)
 '''
-import numpy as np
-from numpy import pi,cos,floor,kron,zeros
 from numpy.random import rand
 from scipy.linalg import expm
 import torch
 from contraction import *
 from expm_taylor import *
 from block_diag import *
+from FOM_terms import *
 
-'''for the Hamiltonian'''
-bx=.721; by=.693
-U=J=delta=1.
-
-cdag = torch.tensor([[0.,0],[1,0]])
-c = torch.tensor([[0.,1],[0,0]])
-nhat = torch.tensor([[0.,0],[0,1]])
-
-def f(m,n):
-    return delta*(cos(2*pi*bx*m)+cos(2*pi*by*n))
-
-def h(m,n):
-    return (kron(cdag,c) + kron(c,cdag) + kron(nhat,.5*f(m,n)*eye(2)*U*nhat)).reshape(2,2,2,2)
-
+N = 6
 
 '''function to generate the untaries in the quantum circuit ansatz.
 creates a random unitary with particle number conservation'''
@@ -44,10 +30,6 @@ def generate_unitary(A):
     u = permuteBasis(u,permute_order(4))
     return u.reshape(2,2,2,2,2,2,2,2)
 
-#to take transpose, i.e. "flip upside down"
-def dagger(u):
-    return u.reshape(16,16).T.reshape(2,2,2,2,2,2,2,2)
-
 ####################################################################################
 '''main part of the code'''
 #initialize all the to-be-optimized variables
@@ -60,54 +42,43 @@ for i in range(int(N/2)):
     Au.append([])
     Av.append([])
     for j in range(int(N/2)):
-        Au[i].append([torch.rand(4,4,requires_grad=True),torch.rand(6,6,requires_grad=True),torch.rand(4,4,requires_grad=True)])
-        Av[i].append([torch.rand(4,4,requires_grad=True),torch.rand(6,6,requires_grad=True),torch.rand(4,4,requires_grad=True)])
-
-# unitaries: u = top layer, v = bottom layer
-u = []; v = []
-for i in range(int(N/2)):
-    u.append([])
-    v.append([])
-    for j in range(int(N/2)):
-        u[i].append(generate_unitary(Au[i,j]))
-        v[i].append(generate_unitary(Av[i,j]))
+        Au[i].append([torch.zeros(4,4,requires_grad=True),torch.zeros(6,6,requires_grad=True),torch.zeros(4,4,requires_grad=True)])
+        Av[i].append([torch.zeros(4,4,requires_grad=True),torch.zeros(6,6,requires_grad=True),torch.zeros(4,4,requires_grad=True)])
 
 
+for step in range(3):
+    fom = 0
+    for i in range(int(N/2)):
+        for j in range(int(N/2)):
+            def figure_of_merit():
+                # unitaries: u = top layer, v = bottom layer
 
-'''
-Here is where it is different from the other file
+                unitaries = [generate_unitary(Au[i][j]), generate_unitary(Au[(i+1)%int(N/2)][j]),
+                           generate_unitary(Au[i][(j+1)%int(N/2)]), generate_unitary(Au[(i+1)%int(N/2)][(j+1)%int(N/2)])]
+                v = generate_unitary(Av[i][j])
 
-note the below section is pseudocode
 
-A 'supersite' aka plaquette is a 2x2 square, on which lies a unitary
-'''
+                fig_of_merit = f_plaq(unitaries, v ,i,j)
 
-#here we redefine the optimizer in each sweep
-for step in range(N_steps):
-    for plaquette in supersites:
-        def figure_of_merit_contribution():
-            fig_of_merit_contribution = 0
-            for site in plaquette:
-                for hk in lightcone(site):
-                    for hl in lightcone(site):
-                        find the relevant A,B,C,D tensors
-                        fig_of_merit += trace_calculation(...)
-            return fig_of_merit_contribution
+                fig_of_merit *= -1
+                return fig_of_merit
+            params = [Au[i][j], Au[(i+1)%int(N/2)][j], Au[i][(j+1)%int(N/2)], Au[(i+1)%int(N/2)][(j+1)%int(N/2)], Av[i][j]]
+            optimizer = torch.optim.LBFGS(sum(params,[]),max_iter=1)
 
-        params = '''the five unitaries (4 u's and 1 v) that fall in the lightcone '''
-        optimizer = torch.optim.LBFGS(params,max_iter=1)
-
-        def closure():
+            def closure():
                 optimizer.zero_grad()
-                loss = figure_of_merit_contribution()
+                loss = figure_of_merit()
                 loss.backward()
                 return loss
+            fom+=optimizer.step(closure)
 
-        #run the optimization
-        optimizer.step(closure)
+    print('step ',step+1,'   ',fom)
+
+################################################################################
+
+#now run the optimization
+#optimizer.step(closure)
 
 '''
 At this point, export the optimized unitaries to a file, or perform further
-calculations/checks, etc.
-
-'''
+calculations/checks, etc.'''
