@@ -1,8 +1,6 @@
 from hamiltonian import *
 from contraction import *
 
-
-
 def f_plaq(upper_unitaries,lower_unitary,x,y):
     Z1 = torch.einsum('abcdijkl,im,mjklefgh',dagger(lower_unitary),sz,lower_unitary)
     Z2 = torch.einsum('abcdijkl,jm,imklefgh',dagger(lower_unitary),sz,lower_unitary)
@@ -11,7 +9,7 @@ def f_plaq(upper_unitaries,lower_unitary,x,y):
 
     f_plaquette = 0
     for Z in [Z1,Z2,Z3,Z4]:
-        for f in [f4]:
+        for f in [f1,f2,f3,f4,f5,f6,f7]:
             f_plaquette += f(upper_unitaries,Z,x,y)
 
     return f_plaquette
@@ -37,11 +35,14 @@ def f2(unitaries,Z,x,y):
     for position1 in [1,2,3,4,5,6,7,8]:
         for term1 in [1,2,3]:
             dict1 = tensor_dictionary_pp(unitaries,position1,term1,x,y)
-            for position2 in [1,2,3,4,5,6,7,8]:
+            for position2 in range(position1,9):
                 for term2 in [1,2,3]:
                     dict2 = tensor_dictionary_pp(unitaries,position2,term2,x,y,layer=2)
                     dict = {**dict1,**dict2}
-                    Trace += trace_calculation(Z,Z,**dict)
+                    if position1==position2:
+                        Trace += trace_calculation(Z,Z,**dict)
+                    elif position1<position2:
+                        Trace += 2*trace_calculation(Z,Z,**dict)
     return Trace
 
 
@@ -63,14 +64,67 @@ def f4(unitaries,Z,x,y):
         for position1 in [0,1,2,3]:
             dict1 = tensor_dictionary_plaq(unitaries,quadrant1,position1,x,y)
             for position2 in range(1,17):#[1,2,3,...,16]
-                for term2 in [1,2,3]:
-                    dict2 = tensor_dictionary_edge(unitaries,position2,x,y,layer=2)
-                    dict = {**dict1,**dict2}
-                    Trace += trace_calculation(Z,Z,**dict)
+                dict2 = tensor_dictionary_edge(unitaries,position2,x,y,layer=2)
+                dict = {**dict1,**dict2}
+                Trace += trace_calculation(Z,Z,**dict)
+    return Trace
+
+def f5(unitaries,Z,x,y):
+    Trace = 0
+    for position1 in [1,2,3,4,5,6,7,8]:
+        for term1 in [1,2,3]:
+            dict1 = tensor_dictionary_pp(unitaries,position1,term1,x,y)
+            for position2 in range(1,17):#[1,2,3,...,16]
+                dict2 = tensor_dictionary_edge(unitaries,position2,x,y,layer=2)
+                dict = {**dict1,**dict2}
+                Trace += trace_calculation(Z,Z,**dict)
+    return Trace
+
+def f6(unitaries,Z,x,y):
+    Trace = 0
+    for position1 in range(1,17):#[2,3,...,16]
+        dict1 = tensor_dictionary_edge(unitaries,position1,x,y)
+        for position2 in range(1,position1):#[1,2,3,...,position1-1]
+            dict2 = tensor_dictionary_edge(unitaries,position2,x,y,layer=2)
+            dict = {**dict1,**dict2}
+            Trace += trace_calculation(Z,Z,**dict)
+    return 2*(1/4)*Trace
 
 
+def f7(unitaries,Z,x,y):
+    '''
+       ___________   side 2
+       |         |
+       |         |
+       |         |
+       |_________|
 
+    side 1
+    '''
+    def f7part(quadrant,position,coord,side):
+        m = coord[0]%N
+        n = coord[1]%N
+        ABCD = ['A','B','C','D']
+        h = [[c_,c_dag,0.5*W(m,n)*torch.eye(2) + U*nHat],[c_dag, c_, nHat]]
+        Trace = 0
+        for term1 in [0,1,2]:
+            for term2 in [0,1,2]:
+                X1odd = X2odd = True
+                X1 = sum_funcs[position](unitaries[quadrant],h[side%2][term1])
+                if term1==2: X1odd=False
+                X2 = sum_funcs[position](unitaries[quadrant],h[side%2][term2])
+                if term2==2: X2odd=False
+                dict = {ABCD[quadrant]+'1':X1,ABCD[quadrant]+'2':X2, ABCD[quadrant]+'1odd':X1odd, ABCD[quadrant]+'2odd':X2odd}
+                Trace += torch.trace(h[side-1][term1]@h[side-1][term2])*trace_calculation(Z,Z,**dict)
+        return Trace
 
+    Trace = f7part(0,1,(x,y-2),1) + f7part(0,0,(x-1,y-2),1) + f7part(0,0,(x-2,y-1),1) + f7part(0,2,(x-2,y),1) +\
+    f7part(2,0,(x-2,y+1),1) + f7part(2,3,(x-2,y+2),1) + \
+    f7part(2,3,(x-1,y+2),2) + f7part(2,2,(x,y+2),2) + f7part(3,3,(x+1,y+2),2) + 2*f7part(3,2,(x+2,y+2),2) +\
+    f7part(3,1,(x+2,y+1),2) + f7part(1,2,(x+2,y),2) + f7part(1,1,(x+2,y-1),2) +\
+    f7part(1,1,(x+2,y-2),1) + f7part(1,0,(x+1,y-2),1)
+
+    return (1/2)*Trace
 
 
 
@@ -123,16 +177,26 @@ def tensor_dictionary_plaq(unitaries,quadrant,position,x,y,layer=1):
     return {labels[quadrant]:X}
 
 
+def sum1(u,op):
+    return torch.einsum('abcdijkl,im,mjklefgh',dagger(u),op,u)
+
+def sum2(u,op):
+    return torch.einsum('abcdijkl,jm,imklefgh',dagger(u),op,u)
+
+def sum3(u,op):
+    return torch.einsum('abcdijkl,km,ijmlefgh',dagger(u),op,u)
+
+def sum4(u,op):
+    return torch.einsum('abcdijkl,lm,ijkmefgh',dagger(u),op,u)
+
+sum_funcs = [sum1,sum2,sum3,sum4]
+
 
 def tensor_dictionary_pp(unitaries,position,term,x,y,layer=1):
-    C = torch.tensor(c, dtype=torch.float)
-    Cdag = torch.tensor(cdag, dtype=torch.float)
-    nHat = torch.tensor(nhat, dtype=torch.float)
-
     if term==1:
-        operators = [Cdag,C]
+        operators = [c_dag,c_]
     if term==2:
-        operators = [C,Cdag]
+        operators = [c_,c_dag]
 
 
     if position==1:
