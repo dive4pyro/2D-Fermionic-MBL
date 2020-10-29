@@ -1,6 +1,8 @@
 '''
 Main Code
 (optimize all unitaries at once)
+
+local dim d=2, with overall particle number conservation
 '''
 from contraction import *
 from block_diag import *
@@ -11,9 +13,13 @@ N = 6
 ####################################################################################
 #initialize all the to-be-optimized variables
 #store them in 2D lists
+'''actual variables Au and Av
+these are the underlying variables which must be passed to the optimizer later
+Au and Av each is an (N/2) x (N/2) list, and each element of is a list [4x4 matrix, 6x6 matrix, 4x4 matrix]
+this list is turned into a 16x16 unitary matrix (and then reshaped to tensor) 
+via the generate_unitary function in block_diag.py
+'''
 
-#actual variables: Au and Av
-#these are the underlying variables which must be passed to the optimizer later
 Au = []; Av = []
 for i in range(int(N/2)):
     Au.append([])
@@ -52,7 +58,7 @@ def closure():
 print(figure_of_merit())
 
 #now run the optimization
-#optimizer.step(closure)
+optimizer.step(closure)
 
 '''
 At this point, export the optimized unitaries to a file, or perform further
