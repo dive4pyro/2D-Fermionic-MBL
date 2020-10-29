@@ -14,8 +14,8 @@ nhat = array([[0.,0],[0,1]])
 sz = torch.tensor([[1.,0],
             [0,-1]])
 
-C = torch.tensor(c, dtype=torch.float)
-Cdag = torch.tensor(cdag, dtype=torch.float)
+c_ = torch.tensor(c, dtype=torch.float)
+c_dag = torch.tensor(cdag, dtype=torch.float)
 nHat = torch.tensor(nhat, dtype=torch.float)
 
 def W(m,n):
