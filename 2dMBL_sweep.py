@@ -1,10 +1,7 @@
 '''
 Main Code
-
 (optimize FOM terms from one plaquette at a time)
 '''
-from numpy.random import rand
-from scipy.linalg import expm
 import torch
 from contraction import *
 from expm_taylor import *
