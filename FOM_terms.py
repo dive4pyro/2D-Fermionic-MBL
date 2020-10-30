@@ -1,19 +1,13 @@
 from hamiltonian import *
 from contraction import *
 
-def f_plaq(upper_unitaries,lower_unitary,x,y):
-    Z1 = torch.einsum('abcdijkl,im,mjklefgh',dagger(lower_unitary),sz,lower_unitary)
-    Z2 = torch.einsum('abcdijkl,jm,imklefgh',dagger(lower_unitary),sz,lower_unitary)
-    Z3 = torch.einsum('abcdijkl,km,ijmlefgh',dagger(lower_unitary),sz,lower_unitary)
-    Z4 = torch.einsum('abcdijkl,lm,ijkmefgh',dagger(lower_unitary),sz,lower_unitary)
+'''
+below is the code for the FOM contributions f1,...,f7
+basically, the idea is loop over all the positions that the little h hamiltonian operator
+can be in, with two "main loops", one for the upper h_k and one for the lower h_l
 
-    f_plaquette = 0
-    for Z in [Z1,Z2,Z3,Z4]:
-        for f in [f1,f2,f3,f4,f5,f6,f7]:
-            f_plaquette += f(upper_unitaries,Z,x,y)
-
-    return f_plaquette
-
+for each h_k, h_l, use the "tensor dictionary" function to produce the input to the trace_calculation function
+'''
 def f1(unitaries,Z,x,y):
     Trace = 0
     for quadrant1 in [0,1,2,3]:
@@ -91,6 +85,7 @@ def f6(unitaries,Z,x,y):
     return 2*(1/4)*Trace
 
 
+''' warning: the code from here on below is probably highly unreadable '''
 def f7(unitaries,Z,x,y):
     '''
        ___________   side 2
@@ -105,7 +100,7 @@ def f7(unitaries,Z,x,y):
         m = coord[0]%N
         n = coord[1]%N
         ABCD = ['A','B','C','D']
-        h = [[c_,c_dag,0.5*W(m,n)*torch.eye(2) + U*nHat],[c_dag, c_, nHat]]
+        h = [[c_,c_dag,0.5*W(m,n)*torch.eye(2,device=dev) + U*nHat],[c_dag, c_, nHat]]
         Trace = 0
         for term1 in [0,1,2]:
             for term2 in [0,1,2]:
@@ -127,8 +122,10 @@ def f7(unitaries,Z,x,y):
     return (1/2)*Trace
 
 
-
-
+############################################################################
+'''
+below is the code for the tensor dictionaries (probably also quite unreadable)
+'''
 
 #to take transpose, i.e. "flip upside down"
 def dagger(u):
@@ -202,7 +199,7 @@ def tensor_dictionary_pp(unitaries,position,term,x,y,layer=1):
     if position==1:
         if term==3:
             m,n = x, (y-1)%N
-            operators = [nHat,0.5*W(m,n)*torch.eye(2) + U*nHat]
+            operators = [nHat,0.5*W(m,n)*torch.eye(2,device=dev) + U*nHat]
             d = {}
 
         if term==1 or term ==2:
@@ -215,7 +212,7 @@ def tensor_dictionary_pp(unitaries,position,term,x,y,layer=1):
     if position ==2:
         if term==3:
             m,n = x, y
-            operators = [nHat,0.5*W(m,n)*torch.eye(2) + U*nHat]
+            operators = [nHat,0.5*W(m,n)*torch.eye(2,device=dev) + U*nHat]
             d = {}
 
         if term==1 or term ==2:
@@ -228,7 +225,7 @@ def tensor_dictionary_pp(unitaries,position,term,x,y,layer=1):
     if position ==3:
         if term==3:
             m,n = (x-1)%N, y
-            operators = [nHat,0.5*W(m,n)*torch.eye(2) + U*nHat]
+            operators = [nHat,0.5*W(m,n)*torch.eye(2,device=dev) + U*nHat]
             d = {}
 
         if term==1 or term ==2:
@@ -241,7 +238,7 @@ def tensor_dictionary_pp(unitaries,position,term,x,y,layer=1):
     if position ==4:
         if term==3:
             m,n = x, y
-            operators = [nHat,0.5*W(m,n)*torch.eye(2) + U*nHat]
+            operators = [nHat,0.5*W(m,n)*torch.eye(2,device=dev) + U*nHat]
             d = {}
 
         if term==1 or term ==2:
@@ -254,7 +251,7 @@ def tensor_dictionary_pp(unitaries,position,term,x,y,layer=1):
     if position ==5:
         if term==3:
             m,n = (x+1)%N, y
-            operators = [nHat,0.5*W(m,n)*torch.eye(2) + U*nHat]
+            operators = [nHat,0.5*W(m,n)*torch.eye(2,device=dev) + U*nHat]
             d = {}
 
         if term==1 or term ==2:
@@ -267,7 +264,7 @@ def tensor_dictionary_pp(unitaries,position,term,x,y,layer=1):
     if position==6:
         if term==3:
             m,n = (x+2)%N, y
-            operators = [nHat,0.5*W(m,n)*torch.eye(2) + U*nHat]
+            operators = [nHat,0.5*W(m,n)*torch.eye(2,device=dev) + U*nHat]
             d = {}
 
         if term==1 or term ==2:
@@ -280,7 +277,7 @@ def tensor_dictionary_pp(unitaries,position,term,x,y,layer=1):
     if position==7:
         if term==3:
             m,n = x, (y+1)%N
-            operators = [nHat,0.5*W(m,n)*torch.eye(2) + U*nHat]
+            operators = [nHat,0.5*W(m,n)*torch.eye(2,device=dev) + U*nHat]
             d = {}
 
         if term==1 or term ==2:
@@ -293,7 +290,7 @@ def tensor_dictionary_pp(unitaries,position,term,x,y,layer=1):
     if position==8:
         if term==3:
             m,n = x, (y+2)%N
-            operators = [nHat,0.5*W(m,n)*torch.eye(2) + U*nHat]
+            operators = [nHat,0.5*W(m,n)*torch.eye(2,device=dev) + U*nHat]
             d = {}
 
         if term==1 or term ==2:

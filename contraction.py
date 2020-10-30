@@ -7,16 +7,14 @@ Everything in the code here refers directly to the notes and vis versa
 
 '''
 import torch
-
-sz = torch.tensor([[1.,0],
-            [0,-1]])
+from hamiltonian import *
 
 #make the swap tensor
-swap = torch.zeros([2,2,2,2])
+swap = torch.zeros([2,2,2,2],device=dev)
 swap[0,0,0,0] = swap[0,1,1,0] = swap[1,0,0,1] = 1.
 swap[1,1,1,1]= -1
 
-id = torch.eye(2**4).reshape(2,2,2,2,2,2,2,2)
+id = torch.eye(2**4,device=dev).reshape(2,2,2,2,2,2,2,2)
 
 '''
 (assuming PBC) all terms in the figure of merit will involve the calculation below

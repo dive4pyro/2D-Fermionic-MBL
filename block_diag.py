@@ -1,19 +1,17 @@
 from numpy import argsort, array, append
 from expm_taylor import torch_expm
 import torch
+from hamiltonian import *
+
+
 '''
 this file contains code that converts a particle number conserving matrix from
 block-diagonal form to the "usual" occupation number basis
-
-
 How this works: (consider N = 3, with Hilbert space dim = 8, but the idea should generalize easily)
-
 The "usual" basis consists of basis vectors: { |000⟩, |001⟩, |010⟩, |011⟩, |100⟩, |101⟩, |110⟩, |111⟩ }
-
 These basis vectors have particle numbers {0,1,1,2,1,2,2,3} respectively.  A particle-number conserving operator will not be block diagonal in this basis.
 However, if we define a new basis by shuffling the basis vectors so that the respective particle numbers are {0,1,1,1,2,2,2,3}, then particle-number conserving
 operators will be diagonal.
-
 Our situation here is that we want particle-number conserving unitaries, but we want to work in the "usual" basis.  So first we generate random block diagonal
 matrices, and then apply the appropriate inverse basis permutation to get the "usual" basis non-block-diagonal matrices.
 '''
@@ -39,15 +37,15 @@ def permuteBasis(H,order): #where order is the inverse of the desired permutatio
     H = H[order] #permute rows
     H = H.T[order].T #permute columns
     return H
- 
- ####################################################################################   
+
+ ####################################################################################
 '''function to generate the untaries in the quantum circuit ansatz.
 creates a random unitary with particle number conservation'''
 def generate_unitary(A):
     #A is a list of [4x4 matrix, 6x6 matrix, 4x4 matrix]
 
     #construct the block diagonal random unitary matrix
-    u = torch.zeros([16,16])
+    u = torch.zeros([16,16],device=dev)
     u[0,0] = 1.       # 0 particle sector
     u[15,15] = 1      # 4 particle sector
     u[1:5,1:5] = torch_expm(A[0]-A[0].T)    # 1 particle sector
@@ -56,6 +54,4 @@ def generate_unitary(A):
 
     #transform to the usual basis (u will no longer be block diagonal)
     u = permuteBasis(u,permute_order(4))
-    return u.reshape(2,2,2,2,2,2,2,2)   
-    
-    
+    return u.reshape(2,2,2,2,2,2,2,2)

@@ -1,12 +1,10 @@
 '''
 Main Code
-(optimize FOM terms from one plaquette at a time)
-d=2, with overall particle number conservation
+(optimize all unitaries at once)
+local dim d=2, with overall particle number conservation
 '''
 from block_diag import *
 from FOM_terms import *
-
-Nsteps=10
 
 ####################################################################################
 #initialize all the to-be-optimized variables
@@ -17,7 +15,6 @@ Au and Av each is an (N/2) x (N/2) list, and each element of is a list [4x4 matr
 this list is turned into a 16x16 unitary matrix (and then reshaped to tensor)
 via the generate_unitary function in block_diag.py
 '''
-
 #initialize mxm matrix
 def initialize(m):
     return torch.zeros(m,m,requires_grad=True,device=dev)
@@ -43,39 +40,42 @@ def f_plaq(upper_unitaries,lower_unitary,x,y):
 
     return f_plaquette
 
-from time import time
-s = time()
-for step in range(Nsteps+1):
-    fom = 0
+def figure_of_merit():
+    # unitaries: u = top layer, v = bottom layer
+    u = []; v = []
+    for i in range(int(N/2)):
+        u.append([])
+        v.append([])
+        for j in range(int(N/2)):
+            u[i].append(generate_unitary(Au[i][j]))
+            v[i].append(generate_unitary(Av[i][j]))
+
+    fig_of_merit = 0
     for i in range(int(N/2)):
         for j in range(int(N/2)):
-            def figure_of_merit():
-                # unitaries: u = top layer, v = bottom layer
-                unitaries = [generate_unitary(Au[i][j]), generate_unitary(Au[(i+1)%int(N/2)][j]),
-                           generate_unitary(Au[i][(j+1)%int(N/2)]), generate_unitary(Au[(i+1)%int(N/2)][(j+1)%int(N/2)])]
-                v = generate_unitary(Av[i][j])
+            fig_of_merit+=f_plaq([ u[i][j], u[(i+1)%int(N/2)][j], u[(i+1)%int(N/2)][(j+1)%int(N/2)], u[i][(j+1)%int(N/2)] ], v[i][j] ,i,j)
 
-                fig_of_merit = f_plaq(unitaries, v ,i,j)
+    fig_of_merit *= -1
+    return fig_of_merit
 
-                fig_of_merit *= -1
-                return fig_of_merit
-            params = [Au[i][j], Au[(i+1)%int(N/2)][j], Au[i][(j+1)%int(N/2)], Au[(i+1)%int(N/2)][(j+1)%int(N/2)], Av[i][j]]
-            optimizer = torch.optim.LBFGS(sum(params,[]),max_iter=2)
+optimizer = torch.optim.LBFGS(sum(sum(Au+Av,[]),[]),max_iter=10)
 
-            def closure():
-                optimizer.zero_grad()
-                loss = figure_of_merit()
-                loss.backward()
-                return loss
-            if step<Nsteps:
-                fom+=optimizer.step(closure)
-            else:
-                fom += figure_of_merit()
-    print('after step ',step,'   ',fom/2**16)
-    print(time()-s)
-    s=time()
-
+def closure():
+        optimizer.zero_grad()
+        loss = figure_of_merit()
+        loss.backward()
+        return loss
 ################################################################################
+from time import time
+start = time()
+
+
+#now run the optimization
+print(optimizer.step(closure))
+print(figure_of_merit())
+print(time()-start)
+
 '''
 At this point, export the optimized unitaries to a file, or perform further
-calculations/checks, etc.'''
+calculations/checks, etc.
+'''
