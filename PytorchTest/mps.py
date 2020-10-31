@@ -71,10 +71,10 @@ optimizer = torch.optim.LBFGS(A,max_iter=30)#maximum # of iterations
 #the "closure" is basically something we have to include to the optimizer to recompute
 #the loss function multiple times
 def closure():
-        optimizer.zero_grad()
-        loss = energy()
-        loss.backward()
-        return loss
+    optimizer.zero_grad()
+    loss = energy()
+    loss.backward()
+    return loss
 ################################################################################
 print('initial (random state) energy = ', energy())
 
