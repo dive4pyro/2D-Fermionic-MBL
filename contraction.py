@@ -68,6 +68,7 @@ A2odd=False,B1odd=False,B2odd=False,C1odd=False,C2odd=False,D1odd=False,D2odd=Fa
 
     Z2 = torch.einsum('abcdijkl,ijef,klgh',Z2,swap,swap)
     Z2 = torch.einsum('cjbi,lgkf,iaekjdhl',swap,swap,Z2)
-
-    Z = torch.einsum('abijefmn,klcdopgh,ijkl,mnop',Z1,Z2,B,C)
+    Z1 = torch.einsum('abcdefmn,mngh',Z1,C)
+    Z = torch.einsum('abijefop,klcdopgh,ijkl',Z1,Z2,B)
+    #Z = torch.einsum('abijefmn,klcdopgh,ijkl,mnop',Z1,Z2,B,C)
     return torch.einsum('abcd,abcdijkl,ijkl',A,Z,D)
