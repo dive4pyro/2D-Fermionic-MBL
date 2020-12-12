@@ -16,7 +16,6 @@ Basically, I think the code can be broken down into a few main parts:
 5. expm_taylor.py contains code that implements a matrix exponential for Pytorch (a workaround since there's no torch.expm.  I didn't write this myself; found it one someone's github page)
 
 
-###############################################################################################################
 ## Some comments about Python:
 Python code is usually super easy and obvious but here are perhaps a few things worth mentioning:
 
@@ -88,9 +87,7 @@ let's say in our process of calculating the figure of merit, we need to calculat
 
 Basically, the overall algorithm involves looping over the hamiltonian terms to find the contributions to the figure of merit, and at each iteration, produce the dictionary to feed to trace_calculation.
 
-
-################################################################3
-Some comments about Pytorch:
+## Some comments about Pytorch:
 
 ./PytorchTest/mps.py is a quick demonstration of how PyTorch works, using finding the ground state of the Ising model as an example.
 
@@ -98,7 +95,8 @@ That contains all we need to know.  The one difference in the 2D MBL problem is 
 We work with torch tensors, which are NOT numpy arrays but basically behave the same way.  For every numpy.something() there usually is a torch.something()
 (A major exception being, as mentioned above, numpy.linalg.expm().)
 
-	
+About GPU/cuda:  to use GPUs, make sure to install Pytorch with cuda  (nothing involved, just check the box/type in the command)
+then to run on GPU: initialize each tensor with ```device='cuda:0'```.   To use CPU, omit that or type ```device='cpu'```
 	
 
 
