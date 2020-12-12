@@ -5,9 +5,9 @@ UPDATE Dec 2020: this is the new rewritten version.   Now with d=2,3, and 4.
 
 The main file is 'mbl2D.py'   The other files are supporting files.
 
-TO RUN THE CODE: store all the files in the same directory 
+TO RUN THE CODE: store all the files in the same directory.  Modify parameters in the top part of hamiltonian.py   Run mbl2D.py
 
-Basically, I think the code can be broken down into a few main parts:
+Basically, the code can be broken down into a few main parts:
 
 1. Setting up the overal parameters and optimization process (2dMBL.py, hamiltonian.py)
 2. Setting the ansatz/unitiaries, enforcing particle number conservation via block diagonal matrices (ansatz.py)
