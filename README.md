@@ -9,11 +9,11 @@ TO RUN THE CODE: store all the files in the same directory.  Modify parameters i
 
 Basically, the code can be broken down into a few main parts:
 
-1. Setting up the overal parameters and optimization process (2dMBL.py, hamiltonian.py)
+1. Setting up the overall parameters and optimization process (2dMBL.py, hamiltonian.py)
 2. Setting the ansatz/unitiaries, enforcing particle number conservation via block diagonal matrices (ansatz.py)
 3. the trace_calculation function (contraction.py)
-4. looping over the sites (and then Hamiltonian terms, on each site) to set up all of the trace terms in the figure of merit. (FOM_terms.py)
-5. expm_taylor.py contains code that implements a matrix exponential for Pytorch (a workaround since there's no torch.expm.  I didn't write this myself; found it one someone's github page)
+4. looping over the sites and Hamiltonian terms to set up all of the trace terms in the figure of merit. (FOM_terms.py)
+5. expm_taylor.py contains code that implements a matrix exponential for Pytorch (a workaround since there's no torch.expm.  I didn't write this myself; found it one someone's github)
 
 
 ## Some comments about Python:
