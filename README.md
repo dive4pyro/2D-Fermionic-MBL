@@ -20,21 +20,21 @@ Basically, I think the code can be broken down into a few main parts:
 ## Some comments about Python:
 Python code is usually super easy and obvious but here are perhaps a few things worth mentioning:
 
-(1)Python is usually object oriented but we make NO use of classes here, just liberal use of function definitions.
+ - Python is usually object oriented but we make NO use of classes here, just liberal use of function definitions.
 
-(2)installations: to run this code you need Anaconda and Pytorch.
+ - installations: to run this code you need Anaconda and Pytorch.
 
-(3)How to run python (for the actual runs we'll probably do it in a more organized way like via shell script, but this how I usually work):  
+ - How to run python (for the actual runs we'll probably do it in a more organized way like via shell script, but this how I usually work):  
 Put the files in one directory.  cd to that directory and run "python" to open the Python interpreter. To run a file, the command is ```exec(open('filename.py').read())```   (yes, it's quite annoying.  It used to be simply ```run('filename.py)``` but alas, it was changed in Python3)
 
-(4) one line if statements: the statement ```x = a if c==d else b``` is equivalent to:
+ - one line if statements: the statement ```x = a if c==d else b``` is equivalent to:
 ```
 if c==d:
     x = a
 else:
     x = b
 ```
-(5) you can work with functions like variables.  E.g. the following code:
+ - you can work with functions like variables.  E.g. the following code:
 ```
 def square(x):
     return x**2
@@ -49,7 +49,7 @@ for power in powers:
 ```
 will print out 9, 27.
 
-(6) defualt function arguments: we can have, for example
+ - defualt function arguments: we can have, for example
 ```
 def f(a=2,b=2,c=3):
     #insert code here
@@ -57,7 +57,7 @@ def f(a=2,b=2,c=3):
 
 then calling f() will do f(1,2,3). We may specify arguments, e.g. f(b=5,c=10) will give f(1,5,10).   		
 
-(7) dictionaries as function inputs.
+ - dictionaries as function inputs.
 Dictionaries are basically lists of entries in curly braces where each entry is a string paired with some quantity/object.
 e.g. ```{ 'sigmax': array([[0,1],[1,0]]) , 'sigmaz': array([[1,0],[0,-1]]) }``` is a dictonary. 
 
